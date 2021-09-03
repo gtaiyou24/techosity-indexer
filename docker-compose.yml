@@ -1,0 +1,27 @@
+version: "3.4"
+
+services:
+  # indexer
+  indexer:
+    container_name: indexer
+    build: ./indexer
+
+  # RabbitMQ
+  rabbitmq:
+    container_name: rabbitmq
+    restart: always
+    tty: true
+    image: rabbitmq:management
+    ports:
+      - 5672:5672    # standard AMQP protocol port
+      - 15672:15672  # HTTP management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER: "test"
+      - RABBITMQ_DEFAULT_PASS: "test"
+      - RABBITMQ_DEFAULT_VHOST: "/"
+#    データを永続化
+#    volumes:
+#      - rabbitmq-data:/var/lib/rabbitmq
+
+#volumes:
+#  rabbitmq-data:
