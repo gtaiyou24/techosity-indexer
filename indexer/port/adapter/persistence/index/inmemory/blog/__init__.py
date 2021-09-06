@@ -1,0 +1,1 @@
+from .inmemory_blog_index import InMemoryBlogIndex

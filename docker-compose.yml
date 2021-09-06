@@ -1,10 +1,12 @@
 version: "3.4"
 
 services:
-  # indexer
+  # Indexer
   indexer:
     container_name: indexer
     build: ./indexer
+    env_file:
+      - ./indexer/.env
 
   # RabbitMQ
   rabbitmq:
@@ -16,12 +18,25 @@ services:
       - 5672:5672    # standard AMQP protocol port
       - 15672:15672  # HTTP management UI
     environment:
-      - RABBITMQ_DEFAULT_USER: "test"
-      - RABBITMQ_DEFAULT_PASS: "test"
-      - RABBITMQ_DEFAULT_VHOST: "/"
-#    データを永続化
-#    volumes:
-#      - rabbitmq-data:/var/lib/rabbitmq
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    volumes:  # データを永続化
+      - rabbitmq-data:/var/lib/rabbitmq
 
-#volumes:
-#  rabbitmq-data:
+  # ElasticSearch
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch
+    env_file:
+      - ./elasticsearch/.env
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch:/var/lib/elasticsearch
+
+volumes:
+  rabbitmq-data:
+    driver: local
+  elasticsearch:
+    driver: local

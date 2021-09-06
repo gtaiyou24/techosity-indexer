@@ -25,7 +25,7 @@ class Profile:
 
 class Switcher:
     ENV_NAME = "PROFILE_ACTIVES"
-    PROFILE_ACTIVES: Set[str] = set(os.getenv(ENV_NAME).split(","))
+    PROFILE_ACTIVES: Set[str] = set(os.getenv(ENV_NAME, "").split(","))
 
     @classmethod
     def get(cls, classes: Dict[Profile, Any], default: T = None) -> Any:
@@ -35,17 +35,17 @@ class Switcher:
         return default
 
 
-@dataclass(init=True, frozen=True, unsafe_hash=True)
+@dataclass(init=True, frozen=False, unsafe_hash=True)
 class DI(Module):
     interface: Type[T]
     classes: Dict[Profile, T]
     default: T
 
     @staticmethod
-    def of(interface: Type[T], classes: Dict[Set[str], T], default: T = None) -> DI:
+    def new(interface: Type[T], classes: Dict[str, T], default: T = None) -> DI:
         return DI(
             interface,
-            {Profile(actives): a_class for actives, a_class in classes.items()},
+            {Profile(set(actives.split(','))): a_class for actives, a_class in classes.items()},
             default
         )
 

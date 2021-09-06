@@ -13,21 +13,40 @@ class URL:
     host: Host
     path: Path
     query: Query
-    absolute_url: str
 
-    def __init__(self, absolute_url: str):
-        assert absolute_url is not None, "引数absolute_urlにNoneが指定されています。引数absolute_urlは必須です。"
-        assert absolute_url != '', "引数absolute_urlに空文字が指定されています。引数absolute_urlは必須です。"
-        assert isinstance(absolute_url, str), \
-            "引数absolute_urlに{}が指定されています。引数absolute_urlには文字列を指定して下さい。".format(type(absolute_url))
-        assert self.__is_absolute_url(absolute_url), "{}は完全URLではありません。完全URLを指定して下さい。".format(absolute_url)
-        super().__setattr__("absolute_url", absolute_url)
+    def __init__(self, protocol: Protocol, host: Host, path: Path, query: Query):
+        assert protocol is not None, "引数protocolにNoneが指定されています。引数protocolは必須です。"
+        assert host is not None, "引数hostにNoneが指定されています。引数hostは必須です。"
+        assert path is not None, "引数pathにNoneが指定されています。引数pathは必須です。"
+        assert query is not None, "引数queryにNoneが指定されています。引数queryは必須です。"
+        assert isinstance(protocol, Protocol), \
+            "引数protocolに{}が指定されています。引数protocolには文字列を指定して下さい。".format(type(protocol))
+        assert isinstance(host, Host), \
+            "引数hostに{}が指定されています。引数hostには文字列を指定して下さい。".format(type(host))
+        assert isinstance(path, Path), \
+            "引数pathに{}が指定されています。引数pathには文字列を指定して下さい。".format(type(path))
+        assert isinstance(query, Query), \
+            "引数queryに{}が指定されています。引数queryには文字列を指定して下さい。".format(type(query))
+        super().__setattr__("protocol", protocol)
+        super().__setattr__("host", host)
+        super().__setattr__("path", path)
+        super().__setattr__("query", query)
 
     @staticmethod
     def of(absolute_url: str) -> URL:
+        assert URL._is_absolute_url(absolute_url), "{}は完全URLではありません。完全URLを指定して下さい。".format(absolute_url)
+
         parse_result: ParseResult = urlparse(absolute_url)
-        return URL()
+        return URL(
+            Protocol.value_of(parse_result.scheme),
+            Host(parse_result.netloc),
+            Path(parse_result.path),
+            Query(parse_result.query)
+        )
 
     @staticmethod
-    def __is_absolute_url(url: str) -> bool:
+    def _is_absolute_url(url: str) -> bool:
         return re.match(r"^https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", url) is not None
+
+    def absolute_url(self) -> str:
+        return self.protocol.name + "://" + self.host.name + "" + self.path.name + "?" + self.query.parameter

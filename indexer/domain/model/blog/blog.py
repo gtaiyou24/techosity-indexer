@@ -35,7 +35,7 @@ class Blog:
 
     @staticmethod
     def of(id: str, title: str, description: str, url: str) -> Blog:
-        return Blog(BlogId(id), BlogTitle(title), BlogDescription(description), URL(url))
+        return Blog(BlogId(id), BlogTitle(title), BlogDescription(description), URL.of(url))
 
     def id(self) -> str:
         return self.blog_id.id
@@ -47,4 +47,4 @@ class Blog:
         return self.blog_description.text
 
     def url(self) -> str:
-        return self.blog_url.absolute_url
+        return self.blog_url.absolute_url()

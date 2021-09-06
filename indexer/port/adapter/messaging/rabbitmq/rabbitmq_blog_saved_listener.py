@@ -6,14 +6,19 @@ from injector import inject, singleton
 
 from application.command import SaveBlogCommand
 from application.service import SaveBlogApplicationService
+from logger import log
 from port.adapter.messaging import ExchangeListener
 
 
+@singleton
 class RabbitMQBlogSavedListener(ExchangeListener):
 
     @inject
-    def __init__(self):
-        print(" [*] Connecting to server ...")
+    def __init__(self, save_blog_application_service: SaveBlogApplicationService):
+        self.__save_blog_application_service = save_blog_application_service
+
+        # TODO : 以下の処理をクラスに切り分けられないか
+        log.debug("Connecting to server ...")
         # RabbitMQサーバと接続
         connection = pika.BlockingConnection(pika.ConnectionParameters(
             host="rabbitmq", port=5672, virtual_host='/', credentials=pika.PlainCredentials('guest', 'guest')))
@@ -24,27 +29,27 @@ class RabbitMQBlogSavedListener(ExchangeListener):
 
         # コンシューマの登録
         def callback(channel, method, properties, body):
-            print(f" [x] Received {body}")
+            log.debug(f"Received {body}")
             message = body.decode()
             self.filtered_dispatch(message)
-            print(" [x] Done")
+            log.debug("Done")
             # 受信したことをキューに知らせる
             channel.basic_ack(delivery_tag=method.delivery_tag)
 
         channel.basic_consume(queue=self.queue_name(), on_message_callback=callback)
 
         try:
-            print(" [*] Waiting for messages. To exit press Ctrl+C")
+            log.debug("Waiting for messages. To exit press Ctrl+C")
             channel.start_consuming()
         except KeyboardInterrupt:
-            print(" [x] Done")
+            log.debug("Done")
 
     def queue_name(self) -> str:
         return "indexer.blog"
 
     def filtered_dispatch(self, text_message: str) -> NoReturn:
         """受信したメッセージを処理する"""
-        print("メッセージを受信しました！")
-        print("text_message = {}".format(text_message))
-        # message = eval(text_message)
-        # self.__save_blog_application_service.save(SaveBlogCommand())
+        log.debug("メッセージを受信しました！")
+        json: dict = eval(text_message)
+        self.__save_blog_application_service.save(
+            SaveBlogCommand(json['id'], json['title'], json['description'], json['url']))
