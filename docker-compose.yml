@@ -25,9 +25,9 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
 
   # ElasticSearch
-  elasticsearch:
+  elasticsearch-for-index:
     build: ./elasticsearch
-    container_name: elasticsearch
+    container_name: elasticsearch-for-index
     env_file:
       - ./elasticsearch/.env
     ports:
@@ -39,4 +39,3 @@ volumes:
   rabbitmq-data:
     driver: local
   elasticsearch:
-    driver: local

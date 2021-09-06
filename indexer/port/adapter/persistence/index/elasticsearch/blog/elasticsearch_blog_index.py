@@ -12,13 +12,14 @@ class ElasticSearchBlogIndex(BlogIndex):
         "mappings": {
             "properties": {
                 "title": {"type": "text"},
-                "description": {"type": "text"}
+                "description": {"type": "text"},
+                "url": {"type": "text"}
             }
         }
     }
 
     def __init__(self):
-        self.__client = Elasticsearch('elasticsearch')
+        self.__client = Elasticsearch('elasticsearch-for-index')
 
         # インデックスの存在確認
         if not self.__client.indices.exists(index=self.INDEX_NAME):
@@ -28,7 +29,8 @@ class ElasticSearchBlogIndex(BlogIndex):
     def add(self, blog: Blog) -> NoReturn:
         log.debug("blogをElasticSearchに保存します")
         # ドキュメントの登録
-        result = self.__client.create(index=self.INDEX_NAME,
-                                      id=blog.id(),
-                                      body={"title": blog.title(), "description": blog.description()})
+        result = self.__client.create(
+            index=self.INDEX_NAME, id=blog.id(),
+            body={"title": blog.title(), "description": blog.description(), "url": blog.url()}
+        )
         log.debug("{}".format(result))
